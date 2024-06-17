@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html;charset=utf-8" 
+      http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+
+	<link href = "Style.css" rel = "stylesheet">
+
+</head>
+<body>
+<canvas id ="gameCanvas" width="800" height="600"></canvas>
+
+<script src = "Utils.js"></script>
+<script src = "Input.js"></script>
+<script src = "World.js"></script>
+<script src = "Player.js"></script>
+<script src = "Enemies/Enemy.js"></script>
+<script src = "Enemies/Enemy1.js"></script>
+<script src = "Towers/Tower.js"></script>
+<script src = "Towers/Tower1.js"></script>
+<script src = "Towers/falseTower.js"></script>
+<script src = "Towers/Shoot.js"></script>
+
+<script>
+ var canvas;
+ var canvasContext;
+ 
+ //gameloop variables
+ var lag = 0;
+ var lastFrameTimeMs = 0;
+ var maxFPS = 60;
+ var timeStep = 1000/maxFPS;
+
+ var world = new World();
+ var enemy1 = new Enemy1();
+ var tower1 = new Tower1(1000,800);
+ var falseTower = new False(1000, 800);
+ var shots = [];
+
+
+ var num_entities = 0;
+ var entities = [falseTower];
+ 
+ window.onload = function() {
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	requestAnimationFrame(mainLoop);
+
+	canvas.addEventListener('mousemove', MouseInput.updateMousePos);
+	canvas.addEventListener('click', MouseInput.mouseClick);
+	
+ }
+
+ function mainLoop(timeStamp) {
+ 	//max FPS control
+	if (timeStamp < lastFrameTimeMs + timeStep) {
+		requestAnimationFrame(mainLoop);
+		return;
+	}
+ 
+	lag += timeStamp - lastFrameTimeMs;
+	lastFrameTimeMs = timeStamp;
+	
+	while (lag >= timeStep) {
+		move(timeStep);
+		lag -= timeStep;
+	}
+	draw();
+	
+	requestAnimationFrame(mainLoop);
+ }
+ 
+ function move(deltaTime) {
+	
+	world.move(deltaTime);
+	for (var i=0; i < entities.length;i++) {
+		entities[i].move(deltaTime);
+	}
+	
+ }
+ 
+  function draw() {
+	world.draw();
+	for (var i=0; i < entities.length;i++) {
+		entities[i].draw();
+	}
+	
+	Utils.colorRect(735,200,30,30,'blue');
+	Utils.colorText("Tower", 735-12, 200+50, "White" );
+	
+	Utils.colorText("Lifes: "+ Player.life, 0, 50, "White");
+	Utils.colorText("Money: "+ Player.money, 0, 100, "White");
+
+	if(Player.life <= 0 ){
+            Utils.colorText("PERDEU ;)", 370, 270, "White");
+    }else if(world.num_enemies <= 0){
+            Utils.colorText("GANHOU :O", 370, 270, "White");
+    }
+ }
+ 
+</script>
+</body>
+</html>
